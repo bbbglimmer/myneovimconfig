@@ -42,7 +42,6 @@ source ~/.config/nvim/_machine_specific.vim
 " ===
 " === System
 " ===
-"set clipboard=unnamedplus
 "阻止不正确的背景渲染，某些终端配色可能不对需要这个调整
 let &t_ut=''
 "自动切换当前目录为当前文件所在的目录
@@ -222,13 +221,15 @@ nnoremap Y y$
 vnoremap Y "+y
 
 "mac linux均可以设置。允许p黏贴黏贴版版内容到vim，允许y复制黏贴板内容
-set clipboard=unnamed
+"set clipboard=unnamed
+" linux平台设置该值可以让vim寄存器剪贴板上的内容复制到系统上的剪贴板上
+set clipboard=unnamedplus
 "把内容复制到系统粘贴板+
 map <LEADER>c "+y
 "将系统粘贴板+的内容复制到vim中
 map <LEADER>v "+p
 "linux  复制到系统黏贴版,macos则使用pbpaste pbcopy
-"vnoremap Y :w !xclip -i -sel c<CR>
+vnoremap Y :w !xclip -i -selection clipboard<CR>
 
 "缩进快捷键映射
 " Indentation

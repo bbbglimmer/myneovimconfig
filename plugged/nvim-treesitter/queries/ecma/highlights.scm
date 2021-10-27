@@ -12,6 +12,10 @@
 (property_identifier) @property
 (shorthand_property_identifier) @property
 
+(variable_declarator
+  name: (object_pattern
+    (shorthand_property_identifier_pattern))) @variable
+
 ; Special identifiers
 ;--------------------
 
@@ -98,7 +102,10 @@
 (true) @boolean
 (false) @boolean
 (null) @constant.builtin
-(comment) @comment
+[
+(comment)
+(hash_bang_line)
+] @comment
 (string) @string
 (regex) @punctuation.delimiter
 (regex_pattern) @string.regex
@@ -165,16 +172,16 @@
 (ternary_expression ["?" ":"] @conditional)
 (unary_expression ["!" "~" "-" "+" "delete" "void" "typeof"]  @operator)
 
-"(" @punctuation.bracket
-")" @punctuation.bracket
-"[" @punctuation.bracket
-"]" @punctuation.bracket
-"{" @punctuation.bracket
-"}" @punctuation.bracket
+[
+  "("
+  ")"
+  "["
+  "]"
+  "{"
+  "}"
+] @punctuation.bracket
 
-(template_substitution
-  "${" @punctuation.special
-  "}" @punctuation.special) @none
+((template_substitution ["${" "}"] @punctuation.special) @none)
 
 ; Keywords
 ;----------

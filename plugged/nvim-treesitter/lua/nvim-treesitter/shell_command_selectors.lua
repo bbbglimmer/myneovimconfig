@@ -65,6 +65,17 @@ function M.select_compiler_args(repo, compiler)
       "-Os",
       "/LD",
     }
+  elseif string.match(compiler, "zig$") or string.match(compiler, "zig.exe$") then
+    return {
+      "c++",
+      "-o",
+      "parser.so",
+      repo.files,
+      "-lc",
+      "-Isrc",
+      "-shared",
+      "-Os",
+    }
   else
     local args = {
       "-o",
@@ -121,16 +132,14 @@ function M.select_mv_cmd(from, to, cwd)
   end
 end
 
-function M.select_download_commands(repo, project_name, cache_folder, revision)
+function M.select_download_commands(repo, project_name, cache_folder, revision, prefer_git)
   local can_use_tar = vim.fn.executable "tar" == 1 and vim.fn.executable "curl" == 1
   local is_github = repo.url:find("github.com", 1, true)
   local is_gitlab = repo.url:find("gitlab.com", 1, true)
 
-  local is_windows = fn.has "win32" == 1
-
   revision = revision or repo.branch or "master"
 
-  if can_use_tar and (is_github or is_gitlab) and not is_windows then
+  if can_use_tar and (is_github or is_gitlab) and not prefer_git then
     local path_sep = utils.get_path_sep()
     local url = repo.url:gsub(".git$", "")
 
@@ -142,6 +151,7 @@ function M.select_download_commands(repo, project_name, cache_folder, revision)
         err = "Error during download, please verify your internet connection",
         opts = {
           args = {
+            "--silent",
             "-L", -- follow redirects
             is_github and url .. "/archive/" .. revision .. ".tar.gz"
               or url .. "/-/archive/" .. revision .. "/" .. project_name .. "-" .. revision .. ".tar.gz",

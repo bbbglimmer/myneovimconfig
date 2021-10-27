@@ -4,6 +4,7 @@ view/
 sessions/
 autoload/plug.vim.old
 tmp/
+plugged/
 .netrwhist
 _machine_specific.vim
 .vim-bookmarks

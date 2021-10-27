@@ -93,7 +93,7 @@
  ] @operator
 
 ;; Punctuation
-[ "," "." ":"] @punctuation.delimiter
+["," "." ":" ";"] @punctuation.delimiter
 
 ;; Brackets
 [
@@ -115,6 +115,8 @@
 ] @boolean
 (nil) @constant.builtin
 (spread) @constant ;; "..."
+((identifier) @constant
+ (#match? @constant "^[A-Z][A-Z_0-9]*$"))
 
 ;; Functions
 (function [(function_name) (identifier)] @function)
@@ -131,10 +133,22 @@
 (function_definition ["function" "end"] @keyword.function)
 
 (property_identifier) @property
-(method) @method
 
-(function_call (identifier) @function . (arguments))
-(function_call (field_expression (property_identifier) @function) . (arguments))
+(function_call
+  [((identifier) @variable (method) @method)
+   ((_) (method) @method)
+   (identifier) @function
+   (field_expression (property_identifier) @function)]
+  . (arguments))
+
+(function_call
+  (identifier) @function.builtin
+  (#any-of? @function.builtin
+    ;; built-in functions in Lua 5.1
+    "assert" "collectgarbage" "dofile" "error" "getfenv" "getmetatable" "ipairs"
+    "load" "loadfile" "loadstring" "module" "next" "pairs" "pcall" "print"
+    "rawequal" "rawget" "rawset" "require" "select" "setfenv" "setmetatable"
+    "tonumber" "tostring" "type" "unpack" "xpcall"))
 
 ;; Parameters
 (parameters

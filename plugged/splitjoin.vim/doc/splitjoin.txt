@@ -339,10 +339,53 @@ ELIXIR                                                        *splitjoin-elixir*
 Do-blocks ~
 >
     def function(arguments) when condition, do: body
-
     def function(arguments) when condition do
       body
     end
+
+    let :one, do: two() |> three(four())
+    let :one do
+      two() |> three(four())
+    end
+
+    if(foo, do: bar, else: baz)
+    if foo do
+      bar
+    else
+      baz
+    end
+<
+Comma-separated method calls (join only): ~
+>
+    for a <- 1..10,
+      Integer.is_odd(a) do
+      a
+    end
+
+    for a <- 1..10, Integer.is_odd(a) do
+      a
+    end
+<
+Pipelines: ~
+>
+    String.length("splitjoin")
+
+    "splitjoin"
+    |> String.length()
+<
+This doesn't currently work properly for multi-line arguments:
+>
+    String.length(
+      Enum.join([
+        "split",
+        "join"
+      ])
+    )
+
+    if true do
+      "splitjoin"
+    end
+    |> String.length()
 <
 
 ==============================================================================

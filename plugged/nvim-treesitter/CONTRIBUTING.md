@@ -76,9 +76,8 @@ line of your file_.
 ; inherits: lang1,(optionallang)
 ```
 
-If you want to include a language for a given query, but don't want for the queries including the
-query you qre writing to include it too, you can mark the language as optional (by putting it
-between parenthesis).
+If you want to inherit a language, but don't want the languages inheriting from yours to inherit it,
+you can mark the language as optional (by putting it between parenthesis).
 
 ### Highlights
 
@@ -131,15 +130,15 @@ effect on highlighting. We will work on improving highlighting in the near futur
 #### Keywords
 
 ```
-@conditional
-@repeat
+@conditional (e.g. `if`, `else`)
+@repeat (e.g. `for`, `while`)
 @label for C/Lua-like labels
 @keyword
-@keyword.function
+@keyword.function (keyword to define a function, e.g. `func` in Go, `def` in Python)
 @keyword.operator (for operators that are English words, e.g. `and`, `or`)
 @keyword.return
 @operator (for symbolic operators, e.g. `+`, `*`)
-@exception
+@exception (e.g. `throw`, `catch`)
 @include keywords for including modules (e.g. import/from in Python)
 
 @type

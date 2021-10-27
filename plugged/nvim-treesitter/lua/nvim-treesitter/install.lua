@@ -11,7 +11,9 @@ local shell = require "nvim-treesitter.shell_command_selectors"
 local M = {}
 local lockfile = {}
 
-M.compilers = { vim.fn.getenv "CC", "cc", "gcc", "clang", "cl" }
+M.compilers = { vim.fn.getenv "CC", "cc", "gcc", "clang", "cl", "zig" }
+M.prefer_git = fn.has "win32" == 1
+M.command_extra_args = {}
 
 local started_commands = 0
 local finished_commands = 0
@@ -39,11 +41,40 @@ local function get_job_status()
     .. "]"
 end
 
+local function get_parser_install_info(lang, validate)
+  local parser_config = parsers.get_parser_configs()[lang]
+
+  if not parser_config then
+    return error("Parser not available for language " .. lang)
+  end
+
+  local install_info = parser_config.install_info
+
+  if validate then
+    vim.validate {
+      url = { install_info.url, "string" },
+      files = { install_info.files, "table" },
+    }
+  end
+
+  return install_info
+end
+
+local function load_lockfile()
+  local filename = utils.join_path(utils.get_package_path(), "lockfile.json")
+  lockfile = vim.fn.filereadable(filename) == 1 and vim.fn.json_decode(vim.fn.readfile(filename)) or {}
+end
+
 local function get_revision(lang)
   if #lockfile == 0 then
-    local filename = utils.join_path(utils.get_package_path(), "lockfile.json")
-    lockfile = vim.fn.filereadable(filename) == 1 and vim.fn.json_decode(vim.fn.readfile(filename)) or {}
+    load_lockfile()
   end
+
+  local install_info = get_parser_install_info(lang)
+  if install_info.revision then
+    return install_info.revision
+  end
+
   return (lockfile[lang] and lockfile[lang].revision)
 end
 
@@ -59,7 +90,8 @@ local function is_installed(lang)
 end
 
 local function needs_update(lang)
-  return not get_revision(lang) or get_revision(lang) ~= get_installed_revision(lang)
+  local revision = get_revision(lang)
+  return not revision or revision ~= get_installed_revision(lang)
 end
 
 local function outdated_parsers()
@@ -92,6 +124,10 @@ function M.iter_cmd(cmd_list, i, lang, success_message)
   local attr = cmd_list[i]
   if attr.info then
     print(get_job_status() .. " " .. attr.info)
+  end
+
+  if attr.opts and attr.opts.args and M.command_extra_args[attr.cmd] then
+    vim.list_extend(attr.opts.args, M.command_extra_args[attr.cmd])
   end
 
   if type(attr.cmd) == "function" then
@@ -150,6 +186,9 @@ end
 local function get_command(cmd)
   local options = ""
   if cmd.opts and cmd.opts.args then
+    if M.command_extra_args[cmd.cmd] then
+      vim.list_extend(cmd.opts.args, M.command_extra_args[cmd.cmd])
+    end
     for _, opt in ipairs(cmd.opts.args) do
       options = string.format("%s %s", options, opt)
     end
@@ -240,7 +279,10 @@ local function run_install(cache_folder, install_folder, lang, repo, with_sync, 
   local command_list = {}
   if not from_local_path then
     vim.list_extend(command_list, { shell.select_install_rm_cmd(cache_folder, project_name) })
-    vim.list_extend(command_list, shell.select_download_commands(repo, project_name, cache_folder, revision))
+    vim.list_extend(
+      command_list,
+      shell.select_download_commands(repo, project_name, cache_folder, revision, M.prefer_git)
+    )
   end
   if generate_from_grammar then
     if repo.generate_requires_npm then
@@ -315,16 +357,7 @@ local function install_lang(lang, ask_reinstall, cache_folder, install_folder, w
     end
   end
 
-  local parser_config = parsers.get_parser_configs()[lang]
-  if not parser_config then
-    return api.nvim_err_writeln("Parser not available for language " .. lang)
-  end
-
-  local install_info = parser_config.install_info
-  vim.validate {
-    url = { install_info.url, "string" },
-    files = { install_info.files, "table" },
-  }
+  local install_info = get_parser_install_info(lang, true)
 
   run_install(cache_folder, install_folder, lang, install_info, with_sync, generate_from_grammar)
 end
@@ -396,13 +429,13 @@ function M.update(options)
         end
       end
       if installed == 0 then
-        print "Parsers are up-to-date!"
+        utils.notify "Parsers are up-to-date!"
       end
     else
       local parsers_to_update = configs.get_update_strategy() == "lockfile" and outdated_parsers()
         or info.installed_parsers()
       if #parsers_to_update == 0 then
-        print "All parsers are up-to-date!"
+        utils.notify "All parsers are up-to-date!"
       end
       for _, lang in pairs(parsers_to_update) do
         install {
@@ -454,7 +487,7 @@ end
 function M.write_lockfile(verbose, skip_langs)
   local sorted_parsers = {}
   -- Load previous lockfile
-  get_revision()
+  load_lockfile()
   skip_langs = skip_langs or {}
 
   for k, v in pairs(parsers.get_parser_configs()) do

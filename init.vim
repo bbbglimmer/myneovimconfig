@@ -281,10 +281,17 @@ noremap <silent> <LEADER>o za
 " < n   i >
 "     e
 "     v
+"
 "noremap <silent> u k
 "noremap <silent> n h
 "noremap <silent> e j
 "noremap <silent> i l
+"
+"让在一行中占用多行的情况下也允许j k 按键去在行中上下跳动，否则需要gj gk按键去操作
+noremap <buffer> j gj
+noremap <buffer> k gk
+noremap <buffer> gj j
+noremap <buffer> gk k
 "gk 2gk 3gk 表示往上移动多少行，gj 2gj 3gj表示往下移动多少行
 "noremap <silent> gu gk
 "noremap <silent> ge gj
@@ -639,7 +646,7 @@ Plug 'mbbill/undotree'
 " 会跟coc-snippets冲突，报错
 " Plug 'theniceboy/vim-gitignore', { 'for': ['gitignore', 'vim-plug'] }
 " 通过fzf来创建gitignore文件
-Plug 'fszymanski/fzf-gitignore', { 'do': ':UpdateRemotePlugins' }
+Plug 'theniceboy/fzf-gitignore', { 'do': ':UpdateRemotePlugins' }
 "Plug 'mhinz/vim-signify'
 " 在符号列中显示 git diff 的 Vim 插件。它显示已添加、修改或删除了哪些行
 Plug 'airblade/vim-gitgutter'
@@ -1803,8 +1810,12 @@ EOF
 
 "lyokha/vim-xkbswitch
 "
+"
 let g:XkbSwitchEnabled = 1
-
+let g:XkbSwitchNLayout = 'us'
+let b:XkbSwitchILayout = 'us'
+autocmd BufEnter * let b:XkbSwitchILayout = 'us'
+"
 " ===================== End of Plugin Settings =====================
 
 " ===

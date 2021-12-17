@@ -42,7 +42,14 @@ source ~/.config/nvim/_machine_specific.vim
 " ===
 " === System
 " ===
-"阻止不正确的背景渲染，某些终端配色可能不对需要这个调整
+" 设置vim的编码识别序列,这个设置是有顺序的，一般原则是尽可能把比较独特、不会和别的编码混淆的放在前面（例如ucs-bom，由于带有BOM头的关系很难和别的混淆），然后后面可以按照常用程度降序排列。latin1作为fallback放到最后。
+set fileencodings=ucs-bom,utf-8,utf-16,gbk,big5,gb18030,latin1
+" 如果清楚文档编码，亦可以打开vim后，配置编码打开该文件
+" ##
+" vim
+" :e ++enc=someencoding somefile
+"
+""阻止不正确的背景渲染，某些终端配色可能不对需要这个调整
 let &t_ut=''
 "自动切换当前目录为当前文件所在的目录
 set autochdir
@@ -276,7 +283,9 @@ noremap <silent> <LEADER>o za
 " ===
 " === Cursor Movement
 " ===
-" New cursor movement (the default arrow keys are used for resizing windows)
+"
+"
+" " New cursor movement (the default arrow keys are used for resizing windows)
 "     ^
 "     u
 " < n   i >
@@ -289,10 +298,10 @@ noremap <silent> <LEADER>o za
 "noremap <silent> i l
 "
 "让在一行中占用多行的情况下也允许j k 按键去在行中上下跳动，否则需要gj gk按键去操作
-noremap <buffer> j gj
-noremap <buffer> k gk
-noremap <buffer> gj j
-noremap <buffer> gk k
+" noremap <buffer> j gj
+" noremap <buffer> k gk
+" noremap <buffer> gj j
+" noremap <buffer> gk k
 "gk 2gk 3gk 表示往上移动多少行，gj 2gj 3gj表示往下移动多少行
 "noremap <silent> gu gk
 "noremap <silent> ge gj
@@ -594,6 +603,7 @@ Plug 'RRethy/vim-illuminate'
 "Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 "Plug 'Xuyuanp/nerdtree-git-plugin'
 " fzf.vim插件 模糊文件查找器 需要安装fzf
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 " fzf增强插件
 " 让<leader>f作为fzf的默认按键
@@ -655,8 +665,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'cohama/agit.vim'
 " neovim的lazygit插件，通过它在neovim中调用lazygit
 " git的插件
-" 暂时注释
-" Plug 'kdheepak/lazygit.nvim'
+Plug 'kdheepak/lazygit.nvim'
 
 " Autoformat
 " vimscript插件 vim-codefmt格式化工具会用到它
@@ -757,7 +766,7 @@ Plug 'junegunn/vim-after-object' " da= to delete what's after =
 " 用于文本对齐
 Plug 'godlygeek/tabular' " ga, or :Tabularize <regex> to align
 " 在插入模式下按 <C-G>c 切换临时软件大写锁定，或在正常模式下按 gC 切换稍微更永久的锁定。
-Plug 'tpope/vim-capslock'	" Ctrl+G+c (insert) to toggle capslock ,或者normal模式下gC触发
+" Plug 'tpope/vim-capslock'	" Ctrl+G+c (insert) to toggle capslock ,或者normal模式下gC触发
 " <leader><leader>w 表示为段开头的字符打上标签如abc等，如果要去到该字符串开头的词，则按该标签字符，或者<leader><leader>f  表示查找某个字母开头的词,然后给词打上标签a b c d 等，如果需要跳到该词，则按标签字母则可,<leader><leader>l 表示为行打上标签如abcd等，要跳转到该行则按上该标签字符
 " <leader><leader>s表示双字母查找
 Plug 'easymotion/vim-easymotion'
@@ -1092,7 +1101,7 @@ let g:table_mode_cell_text_object_i_map = 'k<Bar>'
 " === FZF
 " ===
 "将该目录添加到vim的运行时库runtimepath中，因为fzf是通过其他方式安装的，而非vim-plug安装
-set rtp+=/usr/local/opt/fzf
+"set rtp+=/usr/local/opt/fzf
 "set rtp+=/home/david/.linuxbrew/opt/fzf
 " 默认<leader>f为打开fzf，将其改为ctrl p  但<leader>f仍可以打开
 nnoremap <C-p> :Leaderf file<CR>
@@ -1296,8 +1305,6 @@ let g:far#mapping = {
 "if !empty(glob('~/Github/vim-calc/vim-calc.vim'))
 "source ~/Github/vim-calc/vim-calc.vim
 "endif
-
-
 " ===
 " === Bullets.vim
 " ===
@@ -1800,13 +1807,13 @@ EOF
 
 " ===
 " === lazygit.nvim
-" git插件暂时注释，避免c-g会导致冲突
+" git插件，避免c-g会导致冲突
 " ===
-" noremap <c-g> :LazyGit<CR>
-" let g:lazygit_floating_window_winblend = 0 " transparency of floating window
-" let g:lazygit_floating_window_scaling_factor = 1.0 " scaling factor for floating window
-" let g:lazygit_floating_window_corner_chars = ['╭', '╮', '╰', '╯'] " customize lazygit popup window corner characters
-" let g:lazygit_use_neovim_remote = 1 " for neovim-remote support
+noremap <c-g> :LazyGit<CR>
+let g:lazygit_floating_window_winblend = 0 " transparency of floating window
+let g:lazygit_floating_window_scaling_factor = 1.0 " scaling factor for floating window
+let g:lazygit_floating_window_corner_chars = ['╭', '╮', '╰', '╯'] " customize lazygit popup window corner characters
+let g:lazygit_use_neovim_remote = 1 " for neovim-remote support
 
 
 "lyokha/vim-xkbswitch
